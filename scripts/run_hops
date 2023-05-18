@@ -1,0 +1,23 @@
+#!/bin/bash -
+
+set -x
+fn=$(basename "$0")
+
+for dataset in 0; do
+	args="coauthor-cs --runs 10 --test-bins 5 --split 20 $@"
+	time python3 -u main.pyc MLP $args --n-layers 3
+	time python3 -u main.pyc JKNet $args --n-layers 4
+	time python3 -u main.pyc GCNII $args --n-layers 8 --alpha 0.3 --beta 1.0
+	time python3 -u main.pyc GCN $args
+	time python3 -u main.pyc GraphMLP $args --weight-decay 0.005 --alpha 0.5 --beta 10 --batch-size 2048
+	time python3 -u main.pyc MLP $args --n-layers 3 --weight-decay 0.0005 --gem 0.5 --alpha 0.25
+	args="coauthor-phy --runs 10 --test-bins 5 --split 20 $@"
+	time python3 -u main.pyc GCN $args
+	time python3 -u main.pyc MLP $args --n-layers 3
+	time python3 -u main.pyc JKNet $args --n-layers 2
+	time python3 -u main.pyc GCNII $args --n-layers 8 --alpha 0.3 --beta 1.0
+	time python3 -u main.pyc GraphMLP $args --weight-decay 0.0 --alpha 0.5 --beta 10 --batch-size 2048
+	time python3 -u main.pyc MLP $args --n-layers 3 --weight-decay 0.005 --gem 0.5 --alpha 0.25
+done 2>&1 | tee -a logs/$fn.log
+
+date

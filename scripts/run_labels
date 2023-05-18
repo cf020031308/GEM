@@ -1,0 +1,20 @@
+#!/bin/bash -
+
+set -x
+fn=$(basename "$0")
+
+
+for split in 20 0.1 0.2 0.3 0.4 0.5; do
+	for dataset in amazon-com amazon-photo; do
+		args="$dataset --runs 10 --split $split $@ --inductive"
+		time python3 -u main.pyc MLP $args --n-layers 3
+		time python3 -u main.pyc GCN $args --n-layers 1
+		time python3 -u main.pyc GCN $args
+		time python3 -u main.pyc MLP $args --gem 0.1
+		time python3 -u main.pyc MLP $args --gem 0.1 --batch-size -1 --beta 0
+		time python3 -u main.pyc OKDEEM $args --gem 0.1
+		time python3 -u main.pyc OKDEEM $args --gem 0.1 --n-layers 3
+	done
+done 2>&1 | tee -a logs/$fn.log
+
+date

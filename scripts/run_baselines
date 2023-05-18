@@ -1,0 +1,72 @@
+#!/bin/bash -
+
+set -x
+fn=$(basename "$0")
+
+function _run(){
+    # MLP
+	time python3 -u main.pyc MLP $@ --n-layers 3
+    # GCN
+	time python3 -u main.pyc GCN $dataset $args
+    # GAT
+    for heads in 1 4 16; do
+        time python3 -u main.pyc GAT $@ --heads $heads
+    done
+    # SAGE
+	time python3 -u main.pyc SAGE $dataset $args
+    # GLNN
+    for kd in 0.1 1 10; do
+        time python3 -u main.pyc SAGE $@ --kd $kd
+    done
+    # JKNet
+    for layers in 2 4 8; do
+        time python3 -u main.pyc JKNet $@ --n-layers $layers
+    done
+    # GCNII
+    for layers in 2 4 8; do
+        for alpha in 0.1 0.3 0.5; do
+            for theta in 0.5 1 1.5; do
+                time python3 -u main.pyc GCNII $@ --n-layers $layers --alpha $alpha --beta $theta
+            done
+        done
+    done
+    # GraphMLP
+    for tau in 0.5 1.0 2.0; do
+        for wd in 0 5e-3 5e-4; do
+            for pow in 2 3; do
+                for alpha in 1 10; do
+                    for bs in 1024 2048; do
+                        time python3 -u main.pyc GraphMLP $@ --weight-decay $wd --precompute $pow --alpha $tau --batch-size $bs --beta $alpha
+                    done
+                done
+            done
+        done
+    done
+    # Our methods
+    for tau in 0.25 0.5 1.0; do
+        for wd in 0 5e-3 5e-4; do
+            for gem in 0.1 0.3 0.5; do
+                for layers in 2 3; do
+                    # GEM
+                    time python3 -u main.pyc MLP $@ --alpha $tau --weight-decay $wd --gem $gem --n-layers $layers
+                    # EEM
+                    time python3 -u main.pyc MLP $@ --alpha $tau --weight-decay $wd --gem $gem --batch-size -1 --n-layers $layers --beta 0
+                    # OKDEEM
+                    for beta in 1 0.5 0.1; do
+                        time python3 -u main.pyc MLP $@ --alpha $tau --weight-decay $wd --gem $gem --batch-size -1 --n-layers $layers --beta $beta
+                    done
+                done
+            done
+        done
+    done
+}
+
+args="--runs 10 --split 20 --inductive"
+for dataset in cora citeseer pubmed; do
+    _run $dataset --runs 10
+done 2>&1 | tee -a logs/$fn.log
+for dataset in amazon-photo amazon-com coauthor-cs coauthor-phy arxiv; do
+    _run $dataset --runs 10 --split 20 --inductive
+done 2>&1 | tee -a logs/$fn.log
+
+date
