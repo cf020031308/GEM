@@ -1,0 +1,35 @@
+#!/bin/bash -
+
+set -x
+fn=$(basename "$0")
+
+
+args="--runs 10 $@"
+wd=0
+gem=0.1
+beta=0.1
+tau=0.5
+layers=3
+bs=1024  # for amazon-com and coauthor-phy
+# bs=2048  # for arxiv
+# for dataset in arxiv; do
+for dataset in amazon-com coauthor-phy; do
+    # MLP
+    time python3 -u main.pyc MLP $dataset $args --n-layers 3
+    # GCN
+    time python3 -u main.pyc GCN $dataset $args
+    # GEM
+    time python3 -u main.pyc MLP $dataset $args --alpha $tau --gem $gem --n-layers $layers
+    # ECN
+    time python3 -u main.pyc ECN $dataset $args --precompute 1 --batch-size $bs
+    # EEM
+    time python3 -u main.pyc MLP $dataset $args --alpha $tau --weight-decay $wd --gem $gem --batch-size $bs --n-layers $layers --beta 0
+    # OKDEEM
+    time python3 -u main.pyc OKDEEM $dataset $args --alpha $tau --weight-decay $wd --gem $gem --batch-size $bs --n-layers $layers --beta $beta
+    # SAGE: Modified from https://github.com/cf020031308/ECN to support datasplit
+    time python3 -u ecn.pyc GraphSAGE $dataset $args --hidden 256 --dropout 0.5 --transductive --precompute 1 --semi-supervised
+    # FastGCN: Depressed. Too slow
+    # time python3 -u ecn.pyc FastGCN $dataset $args --hidden 256 --dropout 0.5 --transductive --precompute 1 --semi-supervised
+done 2>&1 | tee -a logs/$fn.log
+
+date
