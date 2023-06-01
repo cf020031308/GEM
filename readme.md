@@ -2,6 +2,8 @@
 
 This repo contains code that are required to reporduce all experiments in our paper *Graph Entropy Minimization for Semi-supervised Node Classification*.
 
+[![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/graph-entropy-minimization-for-semi/node-classification-on-citeseer-with-public)](https://paperswithcode.com/sota/node-classification-on-citeseer-with-public?p=graph-entropy-minimization-for-semi)
+
 ## Paper Abstract
 
 Node classifiers are required to comprehensively reduce prediction error, training resources, and inference latency in the industry.
