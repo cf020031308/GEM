@@ -94,3 +94,16 @@ Files in `scripts/` folder are scripts that reproduce experiments in our article
 ## Datasets
 
 Datasets used in our paper are retrieved with [DGL](https://github.com/dmlc/dgl), [PyG](https://github.com/pyg-team/pytorch_geometric), and [OGB](https://github.com/snap-stanford/ogb).
+
+## Citation
+
+```bibtex
+@misc{luo2023graph,
+      title={Graph Entropy Minimization for Semi-supervised Node Classification}, 
+      author={Yi Luo and Guangchun Luo and Ke Qin and Aiguo Chen},
+      year={2023},
+      eprint={2305.19502},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+}
+```
