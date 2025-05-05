@@ -1,0 +1,30 @@
+#!/bin/bash -
+
+set -x
+fn=$(basename "$0")
+
+function _run(){
+    for tau in 0.25 0.5 0.75; do
+        for wd in 0 5e-3 5e-4; do
+            for gem in 0.1 0.3 0.5; do
+                for emb in 0 10 1 0.1; do
+                    for layers in 2 3; do
+                        for beta in 0.1 1; do
+                            time python3 -u full.py OKDEEM $@ --alpha $tau --weight-decay $wd --gem $gem --batch-size -1 --n-layers $layers --beta $beta --embedding $emb
+                            time python3 -u full.py OKDEEM $@ --alpha $tau --weight-decay $wd --gem $gem --batch-size -1 --n-layers $layers --beta $beta --embedding $emb --skip-connection
+                        done
+                    done
+                done
+            done
+        done
+    done
+}
+
+for dataset in cora citeseer pubmed; do
+    _run $dataset --runs 10
+done 2>&1 | tee -a logs/$fn.log
+for dataset in amazon-photo amazon-com coauthor-cs coauthor-phy; do
+    _run $dataset --runs 10 --split 20
+done 2>&1 | tee -a logs/$fn.log
+
+date

@@ -7,19 +7,19 @@ function _run(){
     # MLP
 	time python3 -u main.pyc MLP $@ --n-layers 3
     # GCN
-	time python3 -u main.pyc GCN $dataset $@
+	time python3 -u main.pyc GCN $@
     # GAT
     for heads in 1 4 16; do
         time python3 -u main.pyc GAT $@ --heads $heads
     done
     # SAGE
-	time python3 -u main.pyc SAGE $dataset $@
+	time python3 -u main.pyc SAGE $@
     # GLNN
     for kd in 0.1 1 10; do
         time python3 -u main.pyc SAGE $@ --kd $kd
     done
     # ECN
-    time python3 -u main.pyc ECN $dataset $@ --precompute 1
+    time python3 -u main.pyc ECN $@ --precompute 1
     # JKNet
     for layers in 2 4 8; do
         time python3 -u main.pyc JKNet $@ --n-layers $layers
